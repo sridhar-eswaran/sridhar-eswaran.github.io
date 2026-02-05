@@ -1,586 +1,640 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Shield, 
-  Cpu, 
-  Activity, 
-  CheckCircle, 
-  ArrowRight, 
-  Menu, 
-  X, 
-  Server, 
-  Zap, 
-  Layers,
-  ChevronRight,
-  Mail,
-  Linkedin,
-  Globe,
-  Code2,     // New icon
-  FileJson,  // New icon
-  Workflow,  // New icon
-  User,      // New icon
-  MessageSquare, // New icon
-  Send,      // New icon
-  Terminal   // New icon
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-// --- Components ---
-
-const Section = ({ id, className, children }) => (
-  <section id={id} className={`py-20 px-6 md:px-12 lg:px-24 relative z-10 ${className}`}>
-    {children}
-  </section>
-);
-
-const Button = ({ children, primary, onClick, className = '' }) => (
-  <button 
-    onClick={onClick}
-    className={`
-      px-6 py-3 rounded-md font-medium transition-all duration-300 flex items-center gap-2
-      ${primary 
-        ? 'bg-cyan-600 text-white hover:bg-cyan-500 shadow-[0_4px_14px_rgba(8,145,178,0.3)]' 
-        : 'border border-slate-300 text-slate-600 hover:border-cyan-600 hover:text-cyan-700 bg-white/50 backdrop-blur-sm'}
-      ${className}
-    `}
-  >
-    {children}
-  </button>
-);
-
-const ServiceCard = ({ id, icon: Icon, title, description, features, techStack }) => (
-  <motion.div 
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    whileHover={{ y: -5 }}
-    className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-900/5 transition-all duration-300 group relative flex flex-col h-full"
-  >
-    {/* Technical Header decoration */}
-    <div className="h-1 w-full bg-gradient-to-r from-cyan-500 to-emerald-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infergence | Safe AI for Critical Autonomy</title>
     
-    <div className="p-8 flex-grow relative">
-      {/* Background Grid Pattern for Card */}
-      <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
-      
-      <div className="flex justify-between items-start mb-6 relative z-10">
-        <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center group-hover:bg-cyan-50 group-hover:border-cyan-100 transition-colors">
-          <Icon className="w-6 h-6 text-cyan-600" />
-        </div>
-        <span className="font-mono text-xs text-slate-400 border border-slate-200 px-2 py-1 rounded bg-slate-50 group-hover:text-cyan-600 group-hover:border-cyan-200 transition-colors">
-          {id}
-        </span>
-      </div>
-      
-      <h3 className="text-xl font-bold text-slate-900 mb-3 relative z-10">{title}</h3>
-      <p className="text-slate-600 mb-6 leading-relaxed text-sm relative z-10">{description}</p>
-      
-      <div className="space-y-3 relative z-10">
-        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-            <span className="w-1 h-1 bg-emerald-500 rounded-full"></span> 
-            Key Capabilities
-        </div>
-        <ul className="space-y-2">
-          {features.map((feature, idx) => (
-            <li key={idx} className="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
-              <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-              <span>{feature}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    {/* Tech Stack Footer */}
-    <div className="bg-slate-50 border-t border-slate-100 p-4 relative z-10">
-      <div className="flex flex-wrap gap-2">
-        {techStack.map((tech, idx) => (
-          <span key={idx} className="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">
-            {tech}
-          </span>
-        ))}
-      </div>
-    </div>
-  </motion.div>
-);
-
-const ProcessStep = ({ number, title, text }) => (
-  <div className="relative flex flex-col md:flex-row gap-6 md:gap-10 items-start border-l-2 border-slate-200 md:border-l-0 md:border-t-2 pt-6 md:pt-8 pl-6 md:pl-0">
-    <div className="absolute -left-[9px] top-0 md:-top-[9px] md:left-0 w-4 h-4 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]"></div>
-    <div className="text-5xl font-bold text-slate-100 absolute -top-4 right-0 md:right-auto md:left-4 select-none z-0">
-      0{number}
-    </div>
-    <div className="z-10 relative">
-      <h4 className="text-lg font-bold text-slate-900 mb-2">{title}</h4>
-      <p className="text-slate-600 text-sm leading-relaxed">{text}</p>
-    </div>
-  </div>
-);
-
-const DynamicBackground = () => (
-  <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-    <motion.div
-      animate={{
-        scale: [1, 1.2, 1],
-        rotate: [0, 45, 0],
-        x: [0, 50, 0],
-        y: [0, -50, 0],
-      }}
-      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-      className="absolute -top-[10%] -right-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-cyan-100/40 to-blue-100/40 blur-3xl opacity-60"
-    />
-    <motion.div
-      animate={{
-        scale: [1, 1.3, 1],
-        rotate: [0, -45, 0],
-        x: [0, -30, 0],
-        y: [0, 50, 0],
-      }}
-      transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-      className="absolute top-[40%] -left-[20%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-emerald-100/40 to-teal-100/40 blur-3xl opacity-50"
-    />
-    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]"></div>
-  </div>
-);
-
-// --- Main App Component ---
-
-export default function App() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState('home');
-
-  // Handle Scroll Effects
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-      
-      // Update active section for nav highlighting
-      const sections = ['home', 'services', 'approach', 'about', 'contact'];
-      const current = sections.find(section => {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          return rect.top >= -100 && rect.top < window.innerHeight / 2;
+    <!-- Custom Config & Styles -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'spin-slow': 'spin 10s linear infinite',
+                        'spin-reverse-slow': 'spin-reverse 15s linear infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        'spin-reverse': {
+                            'from': { transform: 'rotate(0deg)' },
+                            'to': { transform: 'rotate(-360deg)' },
+                        }
+                    }
+                }
+            }
         }
-        return false;
-      });
-      if (current) setActiveSection(current);
-    };
+    </script>
+    <style>
+        /* Cursor Tracking Spotlight Effect */
+        #cursor-spotlight {
+            background: radial-gradient(
+                600px circle at var(--x, 50%) var(--y, 50%),
+                rgba(6, 182, 212, 0.08),
+                transparent 40%
+            );
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            transition: background 0.15s ease;
+        }
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+        /* Scroll Animations */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-  const scrollTo = (id) => {
-    setIsMenuOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+        /* Tech Grid Background */
+        .tech-grid-bg {
+            background-image: 
+                linear-gradient(to right, rgba(128, 128, 128, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(128, 128, 128, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+            mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%);
+        }
 
-  const navLinks = [
-    { id: 'home', label: 'Home' },
-    { id: 'services', label: 'Services' },
-    { id: 'approach', label: 'Approach' },
-    { id: 'about', label: 'About' },
-    { id: 'contact', label: 'Contact' },
-  ];
+        /* Utility for card hover line */
+        .group:hover .hover-line {
+            transform: scaleX(1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans selection:bg-cyan-200 selection:text-cyan-900 overflow-x-hidden relative">
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-cyan-200 selection:text-cyan-900 overflow-x-hidden relative">
-      
-      <DynamicBackground />
+    <!-- Cursor Spotlight Background Layer -->
+    <div id="cursor-spotlight"></div>
+    
+    <!-- Noise Overlay -->
+    <div class="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none z-0"></div>
 
-      {/* Navigation */}
-      <nav 
-        className={`fixed w-full z-50 transition-all duration-300 border-b ${
-          scrolled ? 'bg-white/80 backdrop-blur-md border-slate-200 shadow-sm py-4' : 'bg-transparent border-transparent py-6'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => scrollTo('home')}>
-            <div className="w-8 h-8 bg-cyan-600 rounded flex items-center justify-center shadow-lg shadow-cyan-600/20">
-              <Layers className="text-white w-5 h-5" />
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-6 border-b border-transparent">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 cursor-pointer z-50" onclick="scrollToSection('home')">
+                <div class="w-8 h-8 bg-cyan-600 rounded flex items-center justify-center shadow-lg shadow-cyan-600/20">
+                    <i data-lucide="layers" class="text-white w-5 h-5"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-slate-900 transition-colors">INFERGENCE</span>
             </div>
-            <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-slate-900' : 'text-slate-900'}`}>INFERGENCE</span>
-          </div>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex gap-8 items-center">
-            {navLinks.map(link => (
-              <button
-                key={link.id}
-                onClick={() => scrollTo(link.id)}
-                className={`text-sm font-medium transition-colors hover:text-cyan-600 ${
-                  activeSection === link.id ? 'text-cyan-600 font-semibold' : 'text-slate-600'
-                }`}
-              >
-                {link.label}
-              </button>
-            ))}
-            <Button onClick={() => scrollTo('contact')} primary className="py-2 px-4 text-sm">
-              Get in Touch
-            </Button>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button 
-            className="md:hidden text-slate-600 hover:text-cyan-600"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Navigation Drawer */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-white pt-24 px-6 md:hidden"
-          >
-            <div className="flex flex-col gap-6 text-center">
-              {navLinks.map(link => (
-                <button
-                  key={link.id}
-                  onClick={() => scrollTo(link.id)}
-                  className="text-2xl font-medium text-slate-600 hover:text-cyan-600"
-                >
-                  {link.label}
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex gap-8 items-center">
+                <button onclick="scrollToSection('home')" class="nav-link text-sm font-medium text-cyan-600 font-semibold transition-colors hover:text-cyan-600">Home</button>
+                <button onclick="scrollToSection('services')" class="nav-link text-sm font-medium text-slate-600 transition-colors hover:text-cyan-600">Services</button>
+                <button onclick="scrollToSection('approach')" class="nav-link text-sm font-medium text-slate-600 transition-colors hover:text-cyan-600">Approach</button>
+                <button onclick="scrollToSection('about')" class="nav-link text-sm font-medium text-slate-600 transition-colors hover:text-cyan-600">About</button>
+                <button onclick="scrollToSection('contact')" class="px-6 py-2 rounded-md font-medium text-sm bg-cyan-600 text-white hover:bg-cyan-500 shadow-[0_4px_14px_rgba(8,145,178,0.3)] transition-all flex items-center gap-2">
+                    Get in Touch
                 </button>
-              ))}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Hero Section */}
-      <Section id="home" className="pt-40 pb-32 flex items-center min-h-screen relative overflow-hidden">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-cyan-700 text-xs font-semibold uppercase tracking-wider mb-6 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Systems Operational
-            </div>
-            <h1 className="text-5xl lg:text-7xl font-bold leading-tight mb-6 text-slate-900">
-              Safe AI for <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-emerald-600">
-                Critical Autonomy
-              </span>
-            </h1>
-            <p className="text-lg text-slate-600 mb-8 max-w-xl leading-relaxed">
-              Bridging the gap between stochastic perception and deterministic control. Architecting safety regulations compliant autonomy stacks for safety-critical environments.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button primary onClick={() => scrollTo('contact')}>
-                Consult with Experts <ArrowRight className="w-4 h-4" />
-              </Button>
-              <Button onClick={() => scrollTo('services')}>
-                Explore Services
-              </Button>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative hidden lg:block"
-          >
-            {/* Abstract Tech Visualization */}
-            <div className="relative w-full h-[500px] bg-white/60 rounded-2xl border border-slate-200 overflow-hidden backdrop-blur-md p-8 flex items-center justify-center shadow-2xl shadow-cyan-900/5">
-               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.1),transparent_70%)]"></div>
-               
-               {/* Central Hub */}
-               <div className="relative z-10 w-32 h-32 rounded-full border-2 border-cyan-500/30 flex items-center justify-center bg-white shadow-[0_0_30px_rgba(6,182,212,0.15)]">
-                  <Cpu className="w-12 h-12 text-cyan-600" />
-               </div>
-
-               {/* Orbital Nodes */}
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-slate-300/50 animate-[spin_10s_linear_infinite]">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-3 w-6 h-6 bg-white border border-emerald-500 rounded-full flex items-center justify-center shadow-sm">
-                    <CheckCircle className="w-3 h-3 text-emerald-500" />
-                  </div>
-               </div>
-               
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full border border-dashed border-slate-400/30 animate-[spin_15s_linear_infinite_reverse]">
-               </div>
-
-               {/* Labels */}
-               <div className="absolute top-12 left-12 bg-white/90 px-4 py-2 rounded border border-slate-200 text-xs font-mono text-cyan-700 shadow-md backdrop-blur">
-                 &gt; PERCEPTION_MODULE: OK
-               </div>
-               <div className="absolute bottom-20 right-12 bg-white/90 px-4 py-2 rounded border border-slate-200 text-xs font-mono text-emerald-600 shadow-md backdrop-blur">
-                 &gt; SAFETY_GATE: ACTIVE
-               </div>
-            </div>
-          </motion.div>
+            <!-- Mobile Menu Button -->
+            <button id="menu-btn" class="md:hidden text-slate-600 hover:text-cyan-600 z-50">
+                <i data-lucide="menu" id="menu-icon"></i>
+            </button>
         </div>
-      </Section>
 
-      {/* Services Section */}
-      <Section id="services" className="relative">
-        {/* Background Grid for Section */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="mb-16 text-center md:text-left">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Technical Capabilities</h2>
-            <div className="w-20 h-1 bg-cyan-500 rounded-full mb-6 mx-auto md:mx-0"></div>
-            <p className="text-slate-600 max-w-2xl text-lg mx-auto md:mx-0">
-              We engineer safety-critical systems at the intersection of AI and deterministic control, adhering to rigorous industry standards.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <ServiceCard 
-              id="ARCH-01"
-              icon={Shield}
-              title="Safe AI Architecture"
-              description="Design of fault-tolerant AI architectures that separate performance optimization from safety-critical assurance layers using simplex and monitor-based patterns."
-              features={[
-                "Run-time Assurance (RTA) Monitors",
-                "OOD & Anomaly Detection",
-                "Fail-Safe / Fail-Operational Logic",
-                "Safety Shielding"
-              ]}
-              techStack={["Python", "C++", "TensorFlow", "PyTorch", "Safe RL"]}
-            />
-            <ServiceCard 
-              id="FSD-02"
-              icon={Server}
-              title="Full-Stack Autonomy"
-              description="End-to-end development of perception, planning, and control stacks optimized for real-time constraints and hardware limitations."
-              features={[
-                "Sensor Fusion (LiDAR/Radar/Vision)",
-                "Trajectory Optimization",
-                "Middleware (ROS 2 / DDS)",
-                "Hardware-in-the-Loop (HIL)"
-              ]}
-              techStack={["ROS 2", "CUDA", "OpenCV", "PCL", "Docker"]}
-            />
-            <ServiceCard 
-              id="VNV-03"
-              icon={Activity}
-              title="V&V and Compliance"
-              description="Rigorous verification strategies to demonstrate safety cases for regulatory bodies, bridging the gap between ML metrics and safety KPIs."
-              features={[
-                "SOTIF (ISO 21448) Analysis",
-                "Scenario-based Testing",
-                "Formal Verification Methods",
-                "Safety Case GSN"
-              ]}
-              techStack={["ISO 26262", "DO-178C", "CARLA", "SysML", "STPA"]}
-            />
-          </div>
-        </div>
-      </Section>
-
-      {/* Approach / Value Prop */}
-      <Section id="approach" className="bg-white/50 border-y border-slate-200/60 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-16 items-start">
-            <div className="md:w-1/3 sticky top-32">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-slate-900">The Infergence <br/>Standard</h2>
-              <p className="text-slate-600 mb-8 leading-relaxed">
-                We don't just build models; we engineer systems. Our approach treats ML components with the same rigor as traditional software, ensuring predictable behavior in unpredictable environments.
-              </p>
-              <Button onClick={() => scrollTo('contact')}>
-                Start a Project <ChevronRight className="w-4 h-4" />
-              </Button>
+        <!-- Mobile Menu Drawer -->
+        <div id="mobile-menu" class="fixed inset-0 bg-white pt-24 px-6 md:hidden opacity-0 pointer-events-none transition-opacity duration-300 z-40">
+            <div class="flex flex-col gap-6 text-center">
+                <button onclick="mobileScrollTo('home')" class="text-2xl font-medium text-slate-600 hover:text-cyan-600">Home</button>
+                <button onclick="mobileScrollTo('services')" class="text-2xl font-medium text-slate-600 hover:text-cyan-600">Services</button>
+                <button onclick="mobileScrollTo('approach')" class="text-2xl font-medium text-slate-600 hover:text-cyan-600">Approach</button>
+                <button onclick="mobileScrollTo('about')" class="text-2xl font-medium text-slate-600 hover:text-cyan-600">About</button>
+                <button onclick="mobileScrollTo('contact')" class="text-2xl font-medium text-slate-600 hover:text-cyan-600">Contact</button>
             </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="pt-40 pb-32 flex items-center min-h-screen relative overflow-hidden z-10">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-6 md:px-12 lg:px-24 w-full">
             
-            <div className="md:w-2/3 grid gap-12">
-              <ProcessStep 
-                number="1"
-                title="Requirements & Hazard Analysis"
-                text="We start by defining the Operational Design Domain (ODD) and identifying hazards early. Whether it's STPA or HARA, we map safety constraints to AI performance metrics."
-              />
-              <ProcessStep 
-                number="2"
-                title="Safety-Aware Design"
-                text="Implementing architectures like Simplex or Safety Shielding where a deterministic safety core oversees the learning-based components."
-              />
-              <ProcessStep 
-                number="3"
-                title="Rigorous Validation"
-                text="From closed-loop simulation to proving ground tests. We utilize counter-factual generation and edge-case mining to stress test the system."
-              />
-              <ProcessStep 
-                number="4"
-                title="Deployment & Monitoring"
-                text="Continuous monitoring of model drift and safety constraints in production, enabling safe CI/CD for autonomous fleets."
-              />
-            </div>
-          </div>
-        </div>
-      </Section>
-
-      {/* About Section */}
-      <Section id="about">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-slate-900">About Infergence</h2>
-          <p className="text-xl text-slate-600 leading-relaxed mb-12">
-            Infergence was founded by veteran systems engineers and AI researchers from the automotive and aerospace industries. We recognized a critical gap: <span className="text-slate-900 font-semibold">AI is advancing faster than our ability to certify it.</span>
-          </p>
-        </div>
-        
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-          <div className="bg-white p-8 rounded-lg text-center border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-4xl font-bold text-cyan-600 mb-2">10+</div>
-            <div className="text-sm text-slate-500 uppercase tracking-wider">Years in Safety Critical Systems</div>
-          </div>
-          <div className="bg-white p-8 rounded-lg text-center border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-4xl font-bold text-emerald-600 mb-2">100%</div>
-            <div className="text-sm text-slate-500 uppercase tracking-wider">Focused on Autonomy</div>
-          </div>
-          <div className="bg-white p-8 rounded-lg text-center border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-4xl font-bold text-blue-600 mb-2">ISO</div>
-            <div className="text-sm text-slate-500 uppercase tracking-wider">Standards Aligned</div>
-          </div>
-        </div>
-      </Section>
-
-      {/* Contact Section */}
-      <Section id="contact" className="pt-20 pb-32 relative overflow-hidden">
-        {/* Decorative background for contact area */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-cyan-200/20 to-emerald-200/20 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-6xl mx-auto relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-5 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl shadow-slate-200/50"
-          >
-            {/* Left Panel: System Info */}
-            <div className="md:col-span-2 bg-slate-900 text-white p-10 flex flex-col justify-between relative overflow-hidden">
-              {/* Decorative Tech Lines */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-emerald-500" />
-              <div className="absolute -bottom-10 -right-10 text-slate-800 opacity-20 transform rotate-12">
-                <Layers className="w-64 h-64" />
-              </div>
-
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 text-emerald-400 mb-6 font-mono text-xs uppercase tracking-widest">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                  System Online
+            <!-- Hero Content -->
+            <div class="reveal-on-scroll">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-cyan-700 text-xs font-semibold uppercase tracking-wider mb-6 shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Systems Operational
                 </div>
-                <h3 className="text-3xl font-bold mb-4">Establish Connection</h3>
-                <p className="text-slate-400 leading-relaxed mb-8">
-                  Ready to architect safety-critical systems? Initiate a secure channel with our engineering team to discuss your ODD and requirements.
+                <h1 class="text-5xl lg:text-7xl font-bold leading-tight mb-6 text-slate-900">
+                    Safe AI for <br />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-emerald-600">
+                        Critical Autonomy
+                    </span>
+                </h1>
+                <p class="text-lg text-slate-600 mb-8 max-w-xl leading-relaxed">
+                    Bridging the gap between stochastic perception and deterministic control. Architecting safety regulations compliant autonomy stacks for safety-critical environments.
                 </p>
-
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
-                      <Terminal className="w-5 h-5 text-cyan-400" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-slate-200">Technical Advisory</div>
-                      <div className="text-xs text-slate-500 mt-1">Architecture & Compliance</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
-                      <Shield className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-slate-200">Safety Assessment</div>
-                      <div className="text-xs text-slate-500 mt-1">SOTIF & ISO 26262</div>
-                    </div>
-                  </div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button onclick="scrollToSection('contact')" class="px-6 py-3 rounded-md font-medium bg-cyan-600 text-white hover:bg-cyan-500 shadow-[0_4px_14px_rgba(8,145,178,0.3)] transition-all flex items-center justify-center gap-2">
+                        Consult with Experts <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="scrollToSection('services')" class="px-6 py-3 rounded-md font-medium border border-slate-300 text-slate-600 hover:border-cyan-600 hover:text-cyan-700 bg-white/50 backdrop-blur-sm transition-all">
+                        Explore Services
+                    </button>
                 </div>
-              </div>
-
-              <div className="relative z-10 mt-12 pt-8 border-t border-slate-800">
-                <div className="text-xs text-slate-500 font-mono mb-2">SECURE_CHANNEL_ID: 8492-AX</div>
-                <div className="flex gap-4">
-                  <a href="#" className="text-slate-400 hover:text-white transition-colors"><Mail className="w-5 h-5" /></a>
-                  <a href="#" className="text-slate-400 hover:text-white transition-colors"><Linkedin className="w-5 h-5" /></a>
-                </div>
-              </div>
             </div>
 
-            {/* Right Panel: Form */}
-            <div className="md:col-span-3 p-10 bg-white">
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Full Name</label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
-                      <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" placeholder="Jane Doe" />
+            <!-- Hero Graphic -->
+            <div class="relative hidden lg:block reveal-on-scroll delay-200">
+                <div class="relative w-full h-[500px] bg-white/60 rounded-2xl border border-slate-200 overflow-hidden backdrop-blur-md p-8 flex items-center justify-center shadow-2xl shadow-cyan-900/5">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.1),transparent_70%)]"></div>
+                    
+                    <!-- Central Hub -->
+                    <div class="relative z-10 w-32 h-32 rounded-full border-2 border-cyan-500/30 flex items-center justify-center bg-white shadow-[0_0_30px_rgba(6,182,212,0.15)]">
+                        <i data-lucide="cpu" class="w-12 h-12 text-cyan-600"></i>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Work Email</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
-                      <input type="email" className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" placeholder="name@company.com" />
+
+                    <!-- Orbital Rings -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-slate-300/50 animate-spin-slow">
+                        <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-3 w-6 h-6 bg-white border border-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                            <i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i>
+                        </div>
                     </div>
-                  </div>
+                    
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full border border-dashed border-slate-400/30 animate-spin-reverse-slow"></div>
+
+                    <!-- Labels -->
+                    <div class="absolute top-12 left-12 bg-white/90 px-4 py-2 rounded border border-slate-200 text-xs font-mono text-cyan-700 shadow-md backdrop-blur">
+                        &gt; PERCEPTION_MODULE: OK
+                    </div>
+                    <div class="absolute bottom-20 right-12 bg-white/90 px-4 py-2 rounded border border-slate-200 text-xs font-mono text-emerald-600 shadow-md backdrop-blur">
+                        &gt; SAFETY_GATE: ACTIVE
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 px-6 md:px-12 lg:px-24 relative z-10">
+        <div class="absolute inset-0 tech-grid-bg pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="mb-16 text-center md:text-left reveal-on-scroll">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Technical Capabilities</h2>
+                <div class="w-20 h-1 bg-cyan-500 rounded-full mb-6 mx-auto md:mx-0"></div>
+                <p class="text-slate-600 max-w-2xl text-lg mx-auto md:mx-0">
+                    We engineer safety-critical systems at the intersection of AI and deterministic control, adhering to rigorous industry standards.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Card 1 -->
+                <div class="reveal-on-scroll bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-900/5 transition-all duration-300 group relative flex flex-col h-full hover:-translate-y-1">
+                    <div class="hover-line h-1 w-full bg-gradient-to-r from-cyan-500 to-emerald-500 transform origin-left scale-x-0 transition-transform duration-500"></div>
+                    <div class="p-8 flex-grow relative">
+                         <!-- Card Grid BG -->
+                         <div class="absolute inset-0 opacity-[0.03] bg-[size:16px_16px] pointer-events-none" style="background-image: linear-gradient(to right,#808080 1px,transparent 1px),linear-gradient(to bottom,#808080 1px,transparent 1px);"></div>
+                         
+                         <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div class="w-12 h-12 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center group-hover:bg-cyan-50 group-hover:border-cyan-100 transition-colors">
+                                <i data-lucide="shield" class="w-6 h-6 text-cyan-600"></i>
+                            </div>
+                            <span class="font-mono text-xs text-slate-400 border border-slate-200 px-2 py-1 rounded bg-slate-50 group-hover:text-cyan-600 group-hover:border-cyan-200 transition-colors">ARCH-01</span>
+                         </div>
+                         <h3 class="text-xl font-bold text-slate-900 mb-3 relative z-10">Safe AI Architecture</h3>
+                         <p class="text-slate-600 mb-6 leading-relaxed text-sm relative z-10">Design of fault-tolerant AI architectures that separate performance optimization from safety-critical assurance layers using simplex and monitor-based patterns.</p>
+                         
+                         <div class="space-y-3 relative z-10">
+                             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <span class="w-1 h-1 bg-emerald-500 rounded-full"></span> Key Capabilities
+                             </div>
+                             <ul class="space-y-2">
+                                 <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                                     <span>Run-time Assurance (RTA)</span>
+                                 </li>
+                                 <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                                     <span>OOD & Anomaly Detection</span>
+                                 </li>
+                                 <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                                     <span>Safety Shielding</span>
+                                 </li>
+                             </ul>
+                         </div>
+                    </div>
+                    <div class="bg-slate-50 border-t border-slate-100 p-4 relative z-10 flex flex-wrap gap-2">
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">Python</span>
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">C++</span>
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">PyTorch</span>
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">Safe RL</span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="reveal-on-scroll bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-900/5 transition-all duration-300 group relative flex flex-col h-full hover:-translate-y-1" style="transition-delay: 100ms;">
+                    <div class="hover-line h-1 w-full bg-gradient-to-r from-cyan-500 to-emerald-500 transform origin-left scale-x-0 transition-transform duration-500"></div>
+                    <div class="p-8 flex-grow relative">
+                         <div class="absolute inset-0 opacity-[0.03] bg-[size:16px_16px] pointer-events-none" style="background-image: linear-gradient(to right,#808080 1px,transparent 1px),linear-gradient(to bottom,#808080 1px,transparent 1px);"></div>
+                         
+                         <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div class="w-12 h-12 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center group-hover:bg-cyan-50 group-hover:border-cyan-100 transition-colors">
+                                <i data-lucide="server" class="w-6 h-6 text-cyan-600"></i>
+                            </div>
+                            <span class="font-mono text-xs text-slate-400 border border-slate-200 px-2 py-1 rounded bg-slate-50 group-hover:text-cyan-600 group-hover:border-cyan-200 transition-colors">FSD-02</span>
+                         </div>
+                         <h3 class="text-xl font-bold text-slate-900 mb-3 relative z-10">Full-Stack Autonomy</h3>
+                         <p class="text-slate-600 mb-6 leading-relaxed text-sm relative z-10">End-to-end development of perception, planning, and control stacks optimized for real-time constraints and hardware limitations.</p>
+                         
+                         <div class="space-y-3 relative z-10">
+                             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <span class="w-1 h-1 bg-emerald-500 rounded-full"></span> Key Capabilities
+                             </div>
+                             <ul class="space-y-2">
+                                 <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                                     <span>Sensor Fusion</span>
+                                 </li>
+                                 <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                                     <span>Trajectory Optimization</span>
+                                 </li>
+                                 <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                                     <span>Middleware (ROS 2/DDS)</span>
+                                 </li>
+                             </ul>
+                         </div>
+                    </div>
+                    <div class="bg-slate-50 border-t border-slate-100 p-4 relative z-10 flex flex-wrap gap-2">
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">ROS 2</span>
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">CUDA</span>
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">OpenCV</span>
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">Docker</span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="reveal-on-scroll bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-900/5 transition-all duration-300 group relative flex flex-col h-full hover:-translate-y-1" style="transition-delay: 200ms;">
+                    <div class="hover-line h-1 w-full bg-gradient-to-r from-cyan-500 to-emerald-500 transform origin-left scale-x-0 transition-transform duration-500"></div>
+                    <div class="p-8 flex-grow relative">
+                         <div class="absolute inset-0 opacity-[0.03] bg-[size:16px_16px] pointer-events-none" style="background-image: linear-gradient(to right,#808080 1px,transparent 1px),linear-gradient(to bottom,#808080 1px,transparent 1px);"></div>
+                         
+                         <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div class="w-12 h-12 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center group-hover:bg-cyan-50 group-hover:border-cyan-100 transition-colors">
+                                <i data-lucide="activity" class="w-6 h-6 text-cyan-600"></i>
+                            </div>
+                            <span class="font-mono text-xs text-slate-400 border border-slate-200 px-2 py-1 rounded bg-slate-50 group-hover:text-cyan-600 group-hover:border-cyan-200 transition-colors">VNV-03</span>
+                         </div>
+                         <h3 class="text-xl font-bold text-slate-900 mb-3 relative z-10">V&V and Compliance</h3>
+                         <p class="text-slate-600 mb-6 leading-relaxed text-sm relative z-10">Rigorous verification strategies to demonstrate safety cases for regulatory bodies, bridging the gap between ML metrics and safety KPIs.</p>
+                         
+                         <div class="space-y-3 relative z-10">
+                             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <span class="w-1 h-1 bg-emerald-500 rounded-full"></span> Key Capabilities
+                             </div>
+                             <ul class="space-y-2">
+                                 <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                                     <span>SOTIF (ISO 21448)</span>
+                                 </li>
+                                 <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                                     <span>Formal Verification</span>
+                                 </li>
+                                 <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                                     <span>Safety Case GSN</span>
+                                 </li>
+                             </ul>
+                         </div>
+                    </div>
+                    <div class="bg-slate-50 border-t border-slate-100 p-4 relative z-10 flex flex-wrap gap-2">
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">ISO 26262</span>
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">DO-178C</span>
+                        <span class="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">STPA</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Approach Section -->
+    <section id="approach" class="py-20 px-6 md:px-12 lg:px-24 relative z-10 bg-white/50 border-y border-slate-200/60 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row gap-16 items-start">
+                <div class="md:w-1/3 sticky top-32 reveal-on-scroll">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 text-slate-900">The Infergence <br/>Standard</h2>
+                    <p class="text-slate-600 mb-8 leading-relaxed">
+                        We don't just build models; we engineer systems. Our approach treats ML components with the same rigor as traditional software, ensuring predictable behavior in unpredictable environments.
+                    </p>
+                    <button onclick="scrollToSection('contact')" class="px-6 py-3 rounded-md font-medium border border-slate-300 text-slate-600 hover:border-cyan-600 hover:text-cyan-700 bg-white/50 backdrop-blur-sm transition-all flex items-center gap-2">
+                        Start a Project <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Project Focus</label>
-                  <div className="relative">
-                    <Layers className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
-                    <select className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all appearance-none">
-                      <option>Safety Assessment (ISO/SOTIF)</option>
-                      <option>Full-Stack Autonomy Architecture</option>
-                      <option>Compliance Advisory</option>
-                      <option>General Inquiry</option>
-                    </select>
-                    <ChevronRight className="absolute right-3 top-4 w-4 h-4 text-slate-400 rotate-90" />
-                  </div>
-                </div>
+                <div class="md:w-2/3 grid gap-12">
+                    <!-- Step 1 -->
+                    <div class="relative flex flex-col md:flex-row gap-6 md:gap-10 items-start border-l-2 border-slate-200 md:border-l-0 md:border-t-2 pt-6 md:pt-8 pl-6 md:pl-0 reveal-on-scroll">
+                        <div class="absolute -left-[9px] top-0 md:-top-[9px] md:left-0 w-4 h-4 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]"></div>
+                        <div class="text-5xl font-bold text-slate-100 absolute -top-4 right-0 md:right-auto md:left-4 select-none z-0">01</div>
+                        <div class="z-10 relative">
+                            <h4 class="text-lg font-bold text-slate-900 mb-2">Requirements & Hazard Analysis</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed">We start by defining the Operational Design Domain (ODD) and identifying hazards early. Whether it's STPA or HARA, we map safety constraints to AI performance metrics.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="relative flex flex-col md:flex-row gap-6 md:gap-10 items-start border-l-2 border-slate-200 md:border-l-0 md:border-t-2 pt-6 md:pt-8 pl-6 md:pl-0 reveal-on-scroll delay-100">
+                        <div class="absolute -left-[9px] top-0 md:-top-[9px] md:left-0 w-4 h-4 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]"></div>
+                        <div class="text-5xl font-bold text-slate-100 absolute -top-4 right-0 md:right-auto md:left-4 select-none z-0">02</div>
+                        <div class="z-10 relative">
+                            <h4 class="text-lg font-bold text-slate-900 mb-2">Safety-Aware Design</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed">Implementing architectures like Simplex or Safety Shielding where a deterministic safety core oversees the learning-based components.</p>
+                        </div>
+                    </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">System Details</label>
-                  <div className="relative">
-                    <MessageSquare className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
-                    <textarea rows="4" className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" placeholder="Describe your autonomy stack and safety goals..."></textarea>
-                  </div>
-                </div>
+                    <!-- Step 3 -->
+                    <div class="relative flex flex-col md:flex-row gap-6 md:gap-10 items-start border-l-2 border-slate-200 md:border-l-0 md:border-t-2 pt-6 md:pt-8 pl-6 md:pl-0 reveal-on-scroll delay-200">
+                        <div class="absolute -left-[9px] top-0 md:-top-[9px] md:left-0 w-4 h-4 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]"></div>
+                        <div class="text-5xl font-bold text-slate-100 absolute -top-4 right-0 md:right-auto md:left-4 select-none z-0">03</div>
+                        <div class="z-10 relative">
+                            <h4 class="text-lg font-bold text-slate-900 mb-2">Rigorous Validation</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed">From closed-loop simulation to proving ground tests. We utilize counter-factual generation and edge-case mining to stress test the system.</p>
+                        </div>
+                    </div>
 
-                <Button primary className="w-full justify-center py-4 text-base bg-cyan-600 hover:bg-cyan-500 border-none shadow-lg shadow-cyan-600/20 group">
-                  Transmit Request <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </form>
+                    <!-- Step 4 -->
+                    <div class="relative flex flex-col md:flex-row gap-6 md:gap-10 items-start border-l-2 border-slate-200 md:border-l-0 md:border-t-2 pt-6 md:pt-8 pl-6 md:pl-0 reveal-on-scroll delay-300">
+                        <div class="absolute -left-[9px] top-0 md:-top-[9px] md:left-0 w-4 h-4 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]"></div>
+                        <div class="text-5xl font-bold text-slate-100 absolute -top-4 right-0 md:right-auto md:left-4 select-none z-0">04</div>
+                        <div class="z-10 relative">
+                            <h4 class="text-lg font-bold text-slate-900 mb-2">Deployment & Monitoring</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed">Continuous monitoring of model drift and safety constraints in production, enabling safe CI/CD for autonomous fleets.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </motion.div>
         </div>
-      </Section>
+    </section>
 
-      {/* Footer - Keeping Dark for contrast and grounding */}
-      <footer className="bg-slate-900 border-t border-slate-800 py-12 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <Layers className="text-slate-400 w-5 h-5" />
-            <span className="text-lg font-bold text-slate-300">INFERGENCE</span>
-          </div>
-          
-          <div className="text-slate-500 text-sm">
-            © {new Date().getFullYear()} Infergence Systems. All rights reserved.
-          </div>
-
-          <div className="flex gap-6">
-            <a href="#" className="text-slate-500 hover:text-cyan-400 transition-colors"><Linkedin className="w-5 h-5" /></a>
-            <a href="#" className="text-slate-500 hover:text-cyan-400 transition-colors"><Mail className="w-5 h-5" /></a>
-            <a href="#" className="text-slate-500 hover:text-cyan-400 transition-colors"><Globe className="w-5 h-5" /></a>
-          </div>
+    <!-- About Section -->
+    <section id="about" class="py-20 px-6 md:px-12 lg:px-24 relative z-10">
+        <div class="max-w-4xl mx-auto text-center reveal-on-scroll">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-slate-900">About Infergence</h2>
+            <p class="text-xl text-slate-600 leading-relaxed mb-12">
+                Infergence was founded by veteran systems engineers and AI researchers from the automotive and aerospace industries. We recognized a critical gap: <span class="text-slate-900 font-semibold">AI is advancing faster than our ability to certify it.</span>
+            </p>
         </div>
-      </footer>
+        
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            <div class="bg-white p-8 rounded-lg text-center border border-slate-200 shadow-sm hover:shadow-md transition-shadow reveal-on-scroll">
+                <div class="text-4xl font-bold text-cyan-600 mb-2">10+</div>
+                <div class="text-sm text-slate-500 uppercase tracking-wider">Years in Safety Critical Systems</div>
+            </div>
+            <div class="bg-white p-8 rounded-lg text-center border border-slate-200 shadow-sm hover:shadow-md transition-shadow reveal-on-scroll delay-100">
+                <div class="text-4xl font-bold text-emerald-600 mb-2">100%</div>
+                <div class="text-sm text-slate-500 uppercase tracking-wider">Focused on Autonomy</div>
+            </div>
+            <div class="bg-white p-8 rounded-lg text-center border border-slate-200 shadow-sm hover:shadow-md transition-shadow reveal-on-scroll delay-200">
+                <div class="text-4xl font-bold text-blue-600 mb-2">ISO</div>
+                <div class="text-sm text-slate-500 uppercase tracking-wider">Standards Aligned</div>
+            </div>
+        </div>
+    </section>
 
-    </div>
-  );
-}
+    <!-- Contact Section -->
+    <section id="contact" class="pt-20 pb-32 px-6 md:px-12 lg:px-24 relative overflow-hidden z-10">
+        <!-- Decorative background for contact area -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-cyan-200/20 to-emerald-200/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-6xl mx-auto relative z-10 reveal-on-scroll">
+            <div class="grid grid-cols-1 md:grid-cols-5 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl shadow-slate-200/50">
+                
+                <!-- Left Panel: System Info -->
+                <div class="md:col-span-2 bg-slate-900 text-white p-10 flex flex-col justify-between relative overflow-hidden">
+                    <!-- Decorative Tech Lines -->
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-emerald-500"></div>
+                    <div class="absolute -bottom-10 -right-10 text-slate-800 opacity-20 transform rotate-12">
+                        <i data-lucide="layers" class="w-64 h-64"></i>
+                    </div>
+
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-2 text-emerald-400 mb-6 font-mono text-xs uppercase tracking-widest">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                            System Online
+                        </div>
+                        <h3 class="text-3xl font-bold mb-4">Establish Connection</h3>
+                        <p class="text-slate-400 leading-relaxed mb-8">
+                            Ready to architect safety-critical systems? Initiate a secure channel with our engineering team to discuss your ODD and requirements.
+                        </p>
+
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 rounded bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
+                                    <i data-lucide="terminal" class="w-5 h-5 text-cyan-400"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-200">Technical Advisory</div>
+                                    <div class="text-xs text-slate-500 mt-1">Architecture & Compliance</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 rounded bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
+                                    <i data-lucide="shield" class="w-5 h-5 text-emerald-400"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-200">Safety Assessment</div>
+                                    <div class="text-xs text-slate-500 mt-1">SOTIF & ISO 26262</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative z-10 mt-12 pt-8 border-t border-slate-800">
+                        <div class="text-xs text-slate-500 font-mono mb-2">SECURE_CHANNEL_ID: 8492-AX</div>
+                        <div class="flex gap-4">
+                            <a href="#" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="mail" class="w-5 h-5"></i></a>
+                            <a href="#" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Form -->
+                <div class="md:col-span-3 p-10 bg-white">
+                    <form class="space-y-6" onsubmit="event.preventDefault()">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-slate-700">Full Name</label>
+                                <div class="relative">
+                                    <div class="absolute left-3 top-3.5 w-5 h-5 text-slate-400 flex items-center justify-center"><i data-lucide="user" class="w-4 h-4"></i></div>
+                                    <input type="text" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" placeholder="Jane Doe">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-slate-700">Work Email</label>
+                                <div class="relative">
+                                    <div class="absolute left-3 top-3.5 w-5 h-5 text-slate-400 flex items-center justify-center"><i data-lucide="mail" class="w-4 h-4"></i></div>
+                                    <input type="email" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" placeholder="name@company.com">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-slate-700">Project Focus</label>
+                            <div class="relative">
+                                <div class="absolute left-3 top-3.5 w-5 h-5 text-slate-400 flex items-center justify-center"><i data-lucide="layers" class="w-4 h-4"></i></div>
+                                <select class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all appearance-none">
+                                    <option>Safety Assessment (ISO/SOTIF)</option>
+                                    <option>Full-Stack Autonomy Architecture</option>
+                                    <option>Compliance Advisory</option>
+                                    <option>General Inquiry</option>
+                                </select>
+                                <div class="absolute right-3 top-4 w-4 h-4 text-slate-400 pointer-events-none"><i data-lucide="chevron-right" class="w-4 h-4 rotate-90"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-slate-700">System Details</label>
+                            <div class="relative">
+                                <div class="absolute left-3 top-3.5 w-5 h-5 text-slate-400 flex items-center justify-center"><i data-lucide="message-square" class="w-4 h-4"></i></div>
+                                <textarea rows="4" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" placeholder="Describe your autonomy stack and safety goals..."></textarea>
+                            </div>
+                        </div>
+
+                        <button class="w-full justify-center py-4 text-base font-medium rounded-md bg-cyan-600 text-white hover:bg-cyan-500 border-none shadow-lg shadow-cyan-600/20 group flex items-center gap-2 transition-all">
+                            Transmit Request <i data-lucide="send" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-12 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <i data-lucide="layers" class="text-slate-400 w-5 h-5"></i>
+                <span class="text-lg font-bold text-slate-300">INFERGENCE</span>
+            </div>
+            
+            <div class="text-slate-500 text-sm">
+                © <script>document.write(new Date().getFullYear())</script> Infergence Systems. All rights reserved.
+            </div>
+
+            <div class="flex gap-6">
+                <a href="#" class="text-slate-500 hover:text-cyan-400 transition-colors"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                <a href="#" class="text-slate-500 hover:text-cyan-400 transition-colors"><i data-lucide="mail" class="w-5 h-5"></i></a>
+                <a href="#" class="text-slate-500 hover:text-cyan-400 transition-colors"><i data-lucide="globe" class="w-5 h-5"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // 1. Navbar Scroll Effect & Active Link Highlight
+        const navbar = document.getElementById('navbar');
+        const sections = ['home', 'services', 'approach', 'about', 'contact'];
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-white/80', 'backdrop-blur-md', 'border-slate-200', 'shadow-sm', 'py-4');
+                navbar.classList.remove('py-6', 'border-transparent');
+            } else {
+                navbar.classList.remove('bg-white/80', 'backdrop-blur-md', 'border-slate-200', 'shadow-sm', 'py-4');
+                navbar.classList.add('py-6', 'border-transparent');
+            }
+            
+            // Active Link Highlight Logic could be expanded here if needed
+        });
+
+        // 2. Smooth Scrolling
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                // Close mobile menu if open
+                if (isMenuOpen) toggleMobileMenu();
+            }
+        }
+
+        function mobileScrollTo(id) {
+            scrollToSection(id);
+        }
+
+        // 3. Mobile Menu Toggle
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        let isMenuOpen = false;
+
+        menuBtn.addEventListener('click', toggleMobileMenu);
+
+        function toggleMobileMenu() {
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
+                menuIcon.setAttribute('data-lucide', 'x');
+            } else {
+                mobileMenu.classList.add('opacity-0', 'pointer-events-none');
+                menuIcon.setAttribute('data-lucide', 'menu');
+            }
+            lucide.createIcons();
+        }
+
+        // 4. Cursor Spotlight Effect
+        const spotlight = document.getElementById('cursor-spotlight');
+        document.addEventListener('mousemove', (e) => {
+            // Update CSS variables for the radial gradient center
+            spotlight.style.setProperty('--x', e.clientX + 'px');
+            spotlight.style.setProperty('--y', e.clientY + 'px');
+        });
+
+        // 5. Scroll Animations (Intersection Observer)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    // Optional: Stop observing once visible
+                    // observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

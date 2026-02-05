@@ -1,481 +1,586 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infergence | Safety-Critical Autonomy</title>
+import React, { useState, useEffect } from 'react';
+import { 
+  Shield, 
+  Cpu, 
+  Activity, 
+  CheckCircle, 
+  ArrowRight, 
+  Menu, 
+  X, 
+  Server, 
+  Zap, 
+  Layers,
+  ChevronRight,
+  Mail,
+  Linkedin,
+  Globe,
+  Code2,     // New icon
+  FileJson,  // New icon
+  Workflow,  // New icon
+  User,      // New icon
+  MessageSquare, // New icon
+  Send,      // New icon
+  Terminal   // New icon
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// --- Components ---
+
+const Section = ({ id, className, children }) => (
+  <section id={id} className={`py-20 px-6 md:px-12 lg:px-24 relative z-10 ${className}`}>
+    {children}
+  </section>
+);
+
+const Button = ({ children, primary, onClick, className = '' }) => (
+  <button 
+    onClick={onClick}
+    className={`
+      px-6 py-3 rounded-md font-medium transition-all duration-300 flex items-center gap-2
+      ${primary 
+        ? 'bg-cyan-600 text-white hover:bg-cyan-500 shadow-[0_4px_14px_rgba(8,145,178,0.3)]' 
+        : 'border border-slate-300 text-slate-600 hover:border-cyan-600 hover:text-cyan-700 bg-white/50 backdrop-blur-sm'}
+      ${className}
+    `}
+  >
+    {children}
+  </button>
+);
+
+const ServiceCard = ({ id, icon: Icon, title, description, features, techStack }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    whileHover={{ y: -5 }}
+    className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-900/5 transition-all duration-300 group relative flex flex-col h-full"
+  >
+    {/* Technical Header decoration */}
+    <div className="h-1 w-full bg-gradient-to-r from-cyan-500 to-emerald-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-    <style>
-        /* --- 1. DESIGN TOKENS (The Onyx Theme) --- */
-        :root {
-            --onyx: #0f172a;
-            --onyx-dim: #1e293b;
-            --onyx-dark: #020617;
-            --signal: #22c55e;
-            --signal-glow: rgba(34, 197, 94, 0.2);
-            --steel: #94a3b8;
-            --white: #ffffff;
-            
-            --font-sans: 'Inter', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            
-            --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
-        }
-
-        /* --- 2. RESET & BASE --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            background-color: var(--onyx);
-            color: var(--white);
-            font-family: var(--font-sans);
-            line-height: 1.6;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        a { text-decoration: none; color: inherit; }
-        ul { list-style: none; }
-
-        /* --- 3. UTILITIES --- */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        .mono-label {
-            font-family: var(--font-mono);
-            color: var(--signal);
-            font-size: 0.75rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-
-        .grid-bg {
-            position: absolute;
-            inset: 0;
-            background-image: 
-                linear-gradient(to right, var(--onyx-dim) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--onyx-dim) 1px, transparent 1px);
-            background-size: 40px 40px;
-            opacity: 0.1;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Fade In Animation */
-        .fade-in-up {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.8s var(--ease-out) forwards;
-        }
-
-        @keyframes fadeInUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- 4. COMPONENTS --- */
-        
-        /* Tech Button */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 2rem;
-            font-family: var(--font-mono);
-            font-size: 0.875rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid transparent;
-        }
-
-        .btn-primary {
-            background-color: var(--signal);
-            color: var(--onyx-dark);
-            border-color: var(--signal);
-        }
-        .btn-primary:hover {
-            background-color: var(--white);
-            color: var(--onyx);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            color: var(--signal);
-            border-color: rgba(34, 197, 94, 0.5);
-        }
-        .btn-outline:hover {
-            border-color: var(--signal);
-            background-color: rgba(34, 197, 94, 0.05);
-        }
-
-        /* --- 5. SECTIONS --- */
-
-        /* Hero Section */
-        .hero {
-            position: relative;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid var(--onyx-dim);
-        }
-
-        .system-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding-left: 1rem;
-            border-left: 2px solid var(--signal);
-            margin-bottom: 2rem;
-        }
-        
-        .status-dot {
-            position: relative;
-            width: 8px;
-            height: 8px;
-            background-color: var(--signal);
-            border-radius: 50%;
-        }
-        .status-dot::after {
-            content: '';
-            position: absolute;
-            top: -4px; left: -4px;
-            width: 16px; height: 16px;
-            border-radius: 50%;
-            background-color: var(--signal);
-            opacity: 0.5;
-            animation: ping 1.5s infinite;
-        }
-
-        @keyframes ping {
-            0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-
-        .hero h1 {
-            font-size: clamp(2.5rem, 5vw, 5rem);
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-            letter-spacing: -0.02em;
-        }
-        
-        .hero p {
-            color: var(--steel);
-            font-size: 1.125rem;
-            max-width: 600px;
-            margin-bottom: 3rem;
-            font-weight: 300;
-        }
-
-        /* Compliance Bar */
-        .compliance-bar {
-            background-color: var(--onyx-dark);
-            border-bottom: 1px solid var(--onyx-dim);
-            padding: 1rem 0;
-            overflow: hidden;
-        }
-        .compliance-wrapper {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            opacity: 0.7;
-        }
-        .compliance-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--steel);
-        }
-        .dot { width: 4px; height: 4px; background: var(--signal); border-radius: 50%; }
-
-        /* Blueprint Section */
-        .blueprint-section {
-            position: relative;
-            padding: 6rem 0;
-            border-bottom: 1px solid var(--onyx-dim);
-        }
-
-        .section-header {
-            margin-bottom: 4rem;
-            border-left: 2px solid var(--signal);
-            padding-left: 1.5rem;
-        }
-        .section-header h2 {
-            font-size: 2.5rem;
-            font-weight: 400;
-            margin-top: 0.5rem;
-        }
-
-        /* Capabilities Grid */
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        .card {
-            background-color: var(--onyx-dim); /* Fallback */
-            background-color: rgba(15, 23, 42, 0.8);
-            border: 1px solid var(--onyx-dim);
-            padding: 2rem;
-            transition: border-color 0.3s ease, transform 0.3s ease;
-        }
-        .card:hover {
-            border-color: rgba(34, 197, 94, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .card-icon {
-            color: var(--signal);
-            margin-bottom: 1.5rem;
-            background: var(--onyx-dark);
-            width: fit-content;
-            padding: 0.75rem;
-            border: 1px solid var(--onyx-dim);
-        }
-
-        .code-block {
-            display: block;
-            background: rgba(0,0,0,0.3);
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--signal);
-            padding: 0.5rem;
-            margin-bottom: 1rem;
-            border-left: 2px solid var(--signal);
-        }
-
-        /* V-Model Layout */
-        .v-model-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            position: relative;
-            margin-top: 4rem;
-        }
-        
-        .v-center-line {
-            position: absolute;
-            left: 50%;
-            top: 0; bottom: 0;
-            width: 1px;
-            background: linear-gradient(to bottom, var(--onyx-dim), var(--signal), var(--onyx-dim));
-            transform: translateX(-50%);
-            display: none;
-        }
-
-        .v-left { text-align: right; padding-right: 2rem; }
-        .v-right { text-align: left; padding-left: 2rem; padding-top: 4rem; }
-        
-        .step { margin-bottom: 3rem; position: relative; }
-        .step h4 { font-size: 1.25rem; font-weight: 500; margin-bottom: 0.25rem; }
-        .step p { color: var(--steel); font-size: 0.9rem; }
-
-        @media (min-width: 768px) {
-            .v-center-line { display: block; }
-        }
-        @media (max-width: 768px) {
-            .v-model-container { grid-template-columns: 1fr; gap: 2rem; }
-            .v-left { text-align: left; padding: 0; border-left: 1px solid var(--onyx-dim); padding-left: 1.5rem; }
-            .v-right { padding: 0; padding-top: 0; border-left: 1px solid var(--onyx-dim); padding-left: 1.5rem; }
-            .section-header h2 { font-size: 2rem; }
-            .hero h1 { font-size: 2.5rem; }
-        }
-
-    </style>
-</head>
-<body>
-
-    <section class="hero">
-        <div class="grid-bg"></div>
-        <div class="container" style="position: relative; z-index: 10;">
-            <div class="fade-in-up">
-                
-                <div class="system-status">
-                    <div class="status-dot"></div>
-                    <span class="mono-label">System Integrity Verified</span>
-                </div>
-
-                <h1>
-                    Engineering Certainty <br>
-                    <span style="color: var(--steel); font-weight: 300;">in a Probabilistic World.</span>
-                </h1>
-
-                <p>
-                    Bridging the gap between stochastic perception and deterministic control. 
-                    Architecting ISO 26262 compliant autonomy stacks for safety-critical environments.
-                </p>
-
-                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-                    <a href="#framework" class="btn btn-primary">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        Review Framework
-                    </a>
-                    <a href="#contact" class="btn btn-outline">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                        Consult Architect
-                    </a>
-                </div>
-
-            </div>
+    <div className="p-8 flex-grow relative">
+      {/* Background Grid Pattern for Card */}
+      <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
+      
+      <div className="flex justify-between items-start mb-6 relative z-10">
+        <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center group-hover:bg-cyan-50 group-hover:border-cyan-100 transition-colors">
+          <Icon className="w-6 h-6 text-cyan-600" />
         </div>
-    </section>
-
-    <div class="compliance-bar">
-        <div class="container compliance-wrapper">
-            <div class="compliance-item"><div class="dot"></div> ISO 26262:2018 (FuSa)</div>
-            <div class="compliance-item"><div class="dot"></div> ISO 21448 (SOTIF)</div>
-            <div class="compliance-item"><div class="dot"></div> DO-178C (Airborne)</div>
-            <div class="compliance-item"><div class="dot"></div> UL 4600 (Autonomous)</div>
+        <span className="font-mono text-xs text-slate-400 border border-slate-200 px-2 py-1 rounded bg-slate-50 group-hover:text-cyan-600 group-hover:border-cyan-200 transition-colors">
+          {id}
+        </span>
+      </div>
+      
+      <h3 className="text-xl font-bold text-slate-900 mb-3 relative z-10">{title}</h3>
+      <p className="text-slate-600 mb-6 leading-relaxed text-sm relative z-10">{description}</p>
+      
+      <div className="space-y-3 relative z-10">
+        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+            <span className="w-1 h-1 bg-emerald-500 rounded-full"></span> 
+            Key Capabilities
         </div>
+        <ul className="space-y-2">
+          {features.map((feature, idx) => (
+            <li key={idx} className="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+              <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
 
-    <section class="blueprint-section" id="framework">
-        <div class="grid-bg"></div>
-        <div class="container">
+    {/* Tech Stack Footer */}
+    <div className="bg-slate-50 border-t border-slate-100 p-4 relative z-10">
+      <div className="flex flex-wrap gap-2">
+        {techStack.map((tech, idx) => (
+          <span key={idx} className="text-[10px] font-medium font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">
+            {tech}
+          </span>
+        ))}
+      </div>
+    </div>
+  </motion.div>
+);
+
+const ProcessStep = ({ number, title, text }) => (
+  <div className="relative flex flex-col md:flex-row gap-6 md:gap-10 items-start border-l-2 border-slate-200 md:border-l-0 md:border-t-2 pt-6 md:pt-8 pl-6 md:pl-0">
+    <div className="absolute -left-[9px] top-0 md:-top-[9px] md:left-0 w-4 h-4 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]"></div>
+    <div className="text-5xl font-bold text-slate-100 absolute -top-4 right-0 md:right-auto md:left-4 select-none z-0">
+      0{number}
+    </div>
+    <div className="z-10 relative">
+      <h4 className="text-lg font-bold text-slate-900 mb-2">{title}</h4>
+      <p className="text-slate-600 text-sm leading-relaxed">{text}</p>
+    </div>
+  </div>
+);
+
+const DynamicBackground = () => (
+  <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        rotate: [0, 45, 0],
+        x: [0, 50, 0],
+        y: [0, -50, 0],
+      }}
+      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      className="absolute -top-[10%] -right-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-cyan-100/40 to-blue-100/40 blur-3xl opacity-60"
+    />
+    <motion.div
+      animate={{
+        scale: [1, 1.3, 1],
+        rotate: [0, -45, 0],
+        x: [0, -30, 0],
+        y: [0, 50, 0],
+      }}
+      transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+      className="absolute top-[40%] -left-[20%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-emerald-100/40 to-teal-100/40 blur-3xl opacity-50"
+    />
+    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]"></div>
+  </div>
+);
+
+// --- Main App Component ---
+
+export default function App() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
+
+  // Handle Scroll Effects
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+      
+      // Update active section for nav highlighting
+      const sections = ['home', 'services', 'approach', 'about', 'contact'];
+      const current = sections.find(section => {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          return rect.top >= -100 && rect.top < window.innerHeight / 2;
+        }
+        return false;
+      });
+      if (current) setActiveSection(current);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollTo = (id) => {
+    setIsMenuOpen(false);
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const navLinks = [
+    { id: 'home', label: 'Home' },
+    { id: 'services', label: 'Services' },
+    { id: 'approach', label: 'Approach' },
+    { id: 'about', label: 'About' },
+    { id: 'contact', label: 'Contact' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-cyan-200 selection:text-cyan-900 overflow-x-hidden relative">
+      
+      <DynamicBackground />
+
+      {/* Navigation */}
+      <nav 
+        className={`fixed w-full z-50 transition-all duration-300 border-b ${
+          scrolled ? 'bg-white/80 backdrop-blur-md border-slate-200 shadow-sm py-4' : 'bg-transparent border-transparent py-6'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => scrollTo('home')}>
+            <div className="w-8 h-8 bg-cyan-600 rounded flex items-center justify-center shadow-lg shadow-cyan-600/20">
+              <Layers className="text-white w-5 h-5" />
+            </div>
+            <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-slate-900' : 'text-slate-900'}`}>INFERGENCE</span>
+          </div>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex gap-8 items-center">
+            {navLinks.map(link => (
+              <button
+                key={link.id}
+                onClick={() => scrollTo(link.id)}
+                className={`text-sm font-medium transition-colors hover:text-cyan-600 ${
+                  activeSection === link.id ? 'text-cyan-600 font-semibold' : 'text-slate-600'
+                }`}
+              >
+                {link.label}
+              </button>
+            ))}
+            <Button onClick={() => scrollTo('contact')} primary className="py-2 px-4 text-sm">
+              Get in Touch
+            </Button>
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="md:hidden text-slate-600 hover:text-cyan-600"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-40 bg-white pt-24 px-6 md:hidden"
+          >
+            <div className="flex flex-col gap-6 text-center">
+              {navLinks.map(link => (
+                <button
+                  key={link.id}
+                  onClick={() => scrollTo(link.id)}
+                  className="text-2xl font-medium text-slate-600 hover:text-cyan-600"
+                >
+                  {link.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Hero Section */}
+      <Section id="home" className="pt-40 pb-32 flex items-center min-h-screen relative overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-cyan-700 text-xs font-semibold uppercase tracking-wider mb-6 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Systems Operational
+            </div>
+            <h1 className="text-5xl lg:text-7xl font-bold leading-tight mb-6 text-slate-900">
+              Safe AI for <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-emerald-600">
+                Critical Autonomy
+              </span>
+            </h1>
+            <p className="text-lg text-slate-600 mb-8 max-w-xl leading-relaxed">
+              We architect, validate, and deploy reliable AI systems for robotics, aerospace, and industrial automation. Bridging the gap between cutting-edge ML and safety certification.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button primary onClick={() => scrollTo('contact')}>
+                Consult with Experts <ArrowRight className="w-4 h-4" />
+              </Button>
+              <Button onClick={() => scrollTo('services')}>
+                Explore Services
+              </Button>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative hidden lg:block"
+          >
+            {/* Abstract Tech Visualization */}
+            <div className="relative w-full h-[500px] bg-white/60 rounded-2xl border border-slate-200 overflow-hidden backdrop-blur-md p-8 flex items-center justify-center shadow-2xl shadow-cyan-900/5">
+               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.1),transparent_70%)]"></div>
+               
+               {/* Central Hub */}
+               <div className="relative z-10 w-32 h-32 rounded-full border-2 border-cyan-500/30 flex items-center justify-center bg-white shadow-[0_0_30px_rgba(6,182,212,0.15)]">
+                  <Cpu className="w-12 h-12 text-cyan-600" />
+               </div>
+
+               {/* Orbital Nodes */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-slate-300/50 animate-[spin_10s_linear_infinite]">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-3 w-6 h-6 bg-white border border-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                    <CheckCircle className="w-3 h-3 text-emerald-500" />
+                  </div>
+               </div>
+               
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full border border-dashed border-slate-400/30 animate-[spin_15s_linear_infinite_reverse]">
+               </div>
+
+               {/* Labels */}
+               <div className="absolute top-12 left-12 bg-white/90 px-4 py-2 rounded border border-slate-200 text-xs font-mono text-cyan-700 shadow-md backdrop-blur">
+                 &gt; PERCEPTION_MODULE: OK
+               </div>
+               <div className="absolute bottom-20 right-12 bg-white/90 px-4 py-2 rounded border border-slate-200 text-xs font-mono text-emerald-600 shadow-md backdrop-blur">
+                 &gt; SAFETY_GATE: ACTIVE
+               </div>
+            </div>
+          </motion.div>
+        </div>
+      </Section>
+
+      {/* Services Section */}
+      <Section id="services" className="relative">
+        {/* Background Grid for Section */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="mb-16 text-center md:text-left">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Technical Capabilities</h2>
+            <div className="w-20 h-1 bg-cyan-500 rounded-full mb-6 mx-auto md:mx-0"></div>
+            <p className="text-slate-600 max-w-2xl text-lg mx-auto md:mx-0">
+              We engineer safety-critical systems at the intersection of AI and deterministic control, adhering to rigorous industry standards.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <ServiceCard 
+              id="ARCH-01"
+              icon={Shield}
+              title="Safe AI Architecture"
+              description="Design of fault-tolerant AI architectures that separate performance optimization from safety-critical assurance layers using simplex and monitor-based patterns."
+              features={[
+                "Run-time Assurance (RTA) Monitors",
+                "OOD & Anomaly Detection",
+                "Fail-Safe / Fail-Operational Logic",
+                "Safety Shielding"
+              ]}
+              techStack={["Python", "C++", "TensorFlow", "PyTorch", "Safe RL"]}
+            />
+            <ServiceCard 
+              id="FSD-02"
+              icon={Server}
+              title="Full-Stack Autonomy"
+              description="End-to-end development of perception, planning, and control stacks optimized for real-time constraints and hardware limitations."
+              features={[
+                "Sensor Fusion (LiDAR/Radar/Vision)",
+                "Trajectory Optimization",
+                "Middleware (ROS 2 / DDS)",
+                "Hardware-in-the-Loop (HIL)"
+              ]}
+              techStack={["ROS 2", "CUDA", "OpenCV", "PCL", "Docker"]}
+            />
+            <ServiceCard 
+              id="VNV-03"
+              icon={Activity}
+              title="V&V and Compliance"
+              description="Rigorous verification strategies to demonstrate safety cases for regulatory bodies, bridging the gap between ML metrics and safety KPIs."
+              features={[
+                "SOTIF (ISO 21448) Analysis",
+                "Scenario-based Testing",
+                "Formal Verification Methods",
+                "Safety Case GSN"
+              ]}
+              techStack={["ISO 26262", "DO-178C", "CARLA", "SysML", "STPA"]}
+            />
+          </div>
+        </div>
+      </Section>
+
+      {/* Approach / Value Prop */}
+      <Section id="approach" className="bg-white/50 border-y border-slate-200/60 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row gap-16 items-start">
+            <div className="md:w-1/3 sticky top-32">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-slate-900">The Infergence <br/>Standard</h2>
+              <p className="text-slate-600 mb-8 leading-relaxed">
+                We don't just build models; we engineer systems. Our approach treats ML components with the same rigor as traditional software, ensuring predictable behavior in unpredictable environments.
+              </p>
+              <Button onClick={() => scrollTo('contact')}>
+                Start a Project <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
             
-            <div class="section-header">
-                <span class="mono-label">// 01_CORE_ARCHITECTURE</span>
-                <h2>Technical Capabilities</h2>
+            <div className="md:w-2/3 grid gap-12">
+              <ProcessStep 
+                number="1"
+                title="Requirements & Hazard Analysis"
+                text="We start by defining the Operational Design Domain (ODD) and identifying hazards early. Whether it's STPA or HARA, we map safety constraints to AI performance metrics."
+              />
+              <ProcessStep 
+                number="2"
+                title="Safety-Aware Design"
+                text="Implementing architectures like Simplex or Safety Shielding where a deterministic safety core oversees the learning-based components."
+              />
+              <ProcessStep 
+                number="3"
+                title="Rigorous Validation"
+                text="From closed-loop simulation to proving ground tests. We utilize counter-factual generation and edge-case mining to stress test the system."
+              />
+              <ProcessStep 
+                number="4"
+                title="Deployment & Monitoring"
+                text="Continuous monitoring of model drift and safety constraints in production, enabling safe CI/CD for autonomous fleets."
+              />
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* About Section */}
+      <Section id="about">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-slate-900">About Infergence</h2>
+          <p className="text-xl text-slate-600 leading-relaxed mb-12">
+            Infergence was founded by veteran systems engineers and AI researchers from the automotive and aerospace industries. We recognized a critical gap: <span className="text-slate-900 font-semibold">AI is advancing faster than our ability to certify it.</span>
+          </p>
+        </div>
+        
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+          <div className="bg-white p-8 rounded-lg text-center border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="text-4xl font-bold text-cyan-600 mb-2">10+</div>
+            <div className="text-sm text-slate-500 uppercase tracking-wider">Years in Safety Critical Systems</div>
+          </div>
+          <div className="bg-white p-8 rounded-lg text-center border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="text-4xl font-bold text-emerald-600 mb-2">100%</div>
+            <div className="text-sm text-slate-500 uppercase tracking-wider">Focused on Autonomy</div>
+          </div>
+          <div className="bg-white p-8 rounded-lg text-center border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="text-4xl font-bold text-blue-600 mb-2">ISO</div>
+            <div className="text-sm text-slate-500 uppercase tracking-wider">Standards Aligned</div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Contact Section */}
+      <Section id="contact" className="pt-20 pb-32 relative overflow-hidden">
+        {/* Decorative background for contact area */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-cyan-200/20 to-emerald-200/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-5 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl shadow-slate-200/50"
+          >
+            {/* Left Panel: System Info */}
+            <div className="md:col-span-2 bg-slate-900 text-white p-10 flex flex-col justify-between relative overflow-hidden">
+              {/* Decorative Tech Lines */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-emerald-500" />
+              <div className="absolute -bottom-10 -right-10 text-slate-800 opacity-20 transform rotate-12">
+                <Layers className="w-64 h-64" />
+              </div>
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 text-emerald-400 mb-6 font-mono text-xs uppercase tracking-widest">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  System Online
+                </div>
+                <h3 className="text-3xl font-bold mb-4">Establish Connection</h3>
+                <p className="text-slate-400 leading-relaxed mb-8">
+                  Ready to architect safety-critical systems? Initiate a secure channel with our engineering team to discuss your ODD and requirements.
+                </p>
+
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
+                      <Terminal className="w-5 h-5 text-cyan-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-slate-200">Technical Advisory</div>
+                      <div className="text-xs text-slate-500 mt-1">Architecture & Compliance</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
+                      <Shield className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-slate-200">Safety Assessment</div>
+                      <div className="text-xs text-slate-500 mt-1">SOTIF & ISO 26262</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative z-10 mt-12 pt-8 border-t border-slate-800">
+                <div className="text-xs text-slate-500 font-mono mb-2">SECURE_CHANNEL_ID: 8492-AX</div>
+                <div className="flex gap-4">
+                  <a href="#" className="text-slate-400 hover:text-white transition-colors"><Mail className="w-5 h-5" /></a>
+                  <a href="#" className="text-slate-400 hover:text-white transition-colors"><Linkedin className="w-5 h-5" /></a>
+                </div>
+              </div>
             </div>
 
-            <div class="grid-3">
+            {/* Right Panel: Form */}
+            <div className="md:col-span-3 p-10 bg-white">
+              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Full Name</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
+                      <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" placeholder="Jane Doe" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Work Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
+                      <input type="email" className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" placeholder="name@company.com" />
+                    </div>
+                  </div>
+                </div>
                 
-                <div class="card">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    </div>
-                    
-                    <h3 style="margin-bottom:0.5rem; font-weight:500;">STPA & ODD Definition</h3>
-                    <code class="code-block">class ODD_Constraints implements SafetyCase</code>
-                    <p style="color: var(--steel); font-size: 0.9rem;">
-                        Moving beyond component-level FMEA. We utilize System-Theoretic Process Analysis (STPA) to identify unsafe control actions within strictly bounded Operational Design Domains.
-                    </p>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">Project Focus</label>
+                  <div className="relative">
+                    <Layers className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
+                    <select className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all appearance-none">
+                      <option>Safety Assessment (ISO/SOTIF)</option>
+                      <option>Full-Stack Autonomy Architecture</option>
+                      <option>Compliance Advisory</option>
+                      <option>General Inquiry</option>
+                    </select>
+                    <ChevronRight className="absolute right-3 top-4 w-4 h-4 text-slate-400 rotate-90" />
+                  </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M6 21V9a9 9 0 0 0 9 9"></path></svg>
-                    </div>
-                    <h3 style="margin-bottom:0.5rem; font-weight:500;">Deterministic Wrappers</h3>
-                    <code class="code-block">assert(prediction ∈ safe_manifold)</code>
-                    <p style="color: var(--steel); font-size: 0.9rem;">
-                        Mitigating stochastic hallucinations. We deploy epistemic uncertainty estimation and Out-of-Distribution (OOD) detectors to trigger deterministic fallback maneuvers.
-                    </p>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">System Details</label>
+                  <div className="relative">
+                    <MessageSquare className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
+                    <textarea rows="4" className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" placeholder="Describe your autonomy stack and safety goals..."></textarea>
+                  </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-                    </div>
-                    
-                    <h3 style="margin-bottom:0.5rem; font-weight:500;">Real-Time HIL Validation</h3>
-                    <code class="code-block">> ./run_fault_injection --target=orin_nx</code>
-                    <p style="color: var(--steel); font-size: 0.9rem;">
-                        Closed-loop verification on target silicon. We execute Hardware-in-the-Loop (HIL) stress testing to verify timing guarantees under maximum bus load.
-                    </p>
-                </div>
-
+                <Button primary className="w-full justify-center py-4 text-base bg-cyan-600 hover:bg-cyan-500 border-none shadow-lg shadow-cyan-600/20 group">
+                  Transmit Request <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </form>
             </div>
+          </motion.div>
         </div>
-    </section>
+      </Section>
 
-    <section class="blueprint-section" style="background-color: var(--onyx-dim);">
-        <div class="container">
-            
-            <div class="section-header">
-                <span class="mono-label">// 02_METHODOLOGY</span>
-                <h2>The W-Model Lifecycle</h2>
-                <p style="color:var(--steel); margin-top:0.5rem;">Adapting the classic V-Model for AI-driven systems.</p>
-            </div>
+      {/* Footer - Keeping Dark for contrast and grounding */}
+      <footer className="bg-slate-900 border-t border-slate-800 py-12 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <Layers className="text-slate-400 w-5 h-5" />
+            <span className="text-lg font-bold text-slate-300">INFERGENCE</span>
+          </div>
+          
+          <div className="text-slate-500 text-sm">
+            © {new Date().getFullYear()} Infergence Systems. All rights reserved.
+          </div>
 
-            
-
-[Image of V-model software development lifecycle diagram]
-
-
-            <div class="v-model-container">
-                <div class="v-center-line"></div>
-                
-                <div class="v-left">
-                    <div class="step">
-                        <span class="mono-label">STEP_01</span>
-                        <h4>ODD Definition</h4>
-                        <p>Defining operational boundaries and environmental constraints.</p>
-                    </div>
-                    <div class="step">
-                        <span class="mono-label">STEP_02</span>
-                        <h4>STPA Hazard Analysis</h4>
-                        <p>Identifying unsafe control actions and loss scenarios.</p>
-                    </div>
-                    <div class="step">
-                        <span class="mono-label">STEP_03</span>
-                        <h4>Model Training</h4>
-                        <p>Synthetic & Real-world data ingestion for ML pipelines.</p>
-                    </div>
-                </div>
-
-                <div class="v-right">
-                    <div class="step">
-                        <span class="mono-label">STEP_04</span>
-                        <h4>OOD Detection</h4>
-                        <p>Runtime rejection of unknown/unsafe inputs.</p>
-                    </div>
-                    <div class="step">
-                        <span class="mono-label">STEP_05</span>
-                        <h4>Hardware-in-Loop</h4>
-                        <p>Fault injection on target ECU (Orin/Aurix).</p>
-                    </div>
-                    <div class="step">
-                        <span class="mono-label">STEP_06</span>
-                        <h4>System Validation</h4>
-                        <p>SOTIF scenario coverage and fleet deployment.</p>
-                    </div>
-                </div>
-
-            </div>
-
+          <div className="flex gap-6">
+            <a href="#" className="text-slate-500 hover:text-cyan-400 transition-colors"><Linkedin className="w-5 h-5" /></a>
+            <a href="#" className="text-slate-500 hover:text-cyan-400 transition-colors"><Mail className="w-5 h-5" /></a>
+            <a href="#" className="text-slate-500 hover:text-cyan-400 transition-colors"><Globe className="w-5 h-5" /></a>
+          </div>
         </div>
-    </section>
+      </footer>
 
-    <footer style="padding: 4rem 0; border-top: 1px solid var(--onyx-dim); background: var(--onyx-dark);">
-        <div class="container" style="text-align: center;">
-            <span class="mono-label" style="display: block; margin-bottom: 1rem;">System Integrity Verified</span>
-            <p style="color: var(--steel); font-size: 0.9rem;">&copy; 2024 Infergence Systems. London • Munich • Detroit.</p>
-        </div>
-    </footer>
-
-    <script>
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = 1;
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        });
-
-        // Optional: Add more elements to animate if desired
-        document.querySelectorAll('.card').forEach(el => {
-            el.style.opacity = 0;
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'all 0.6s ease-out';
-            observer.observe(el);
-        });
-    </script>
-</body>
-</html>
+    </div>
+  );
+}

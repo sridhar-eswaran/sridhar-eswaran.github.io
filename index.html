@@ -273,11 +273,11 @@
                              <ul class="space-y-2">
                                  <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
                                      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
-                                     <span>Sensor Suite Definition</span>
+                                     <span>Sensor Fusion</span>
                                  </li>
                                  <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
                                      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
-                                     <span>Compute Selection</span>
+                                     <span>Trajectory Optimization</span>
                                  </li>
                                  <li class="flex items-start gap-2 text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
                                      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
@@ -541,7 +541,7 @@
             </div>
             
             <div class="text-slate-500 text-sm">
-                © <script>document.write(new Date().getFullYear())</script> Infergence Systems. All rights reserved.
+                © <span id="year"></span> Infergence Systems. All rights reserved.
             </div>
 
             <div class="flex gap-6">
@@ -554,8 +554,18 @@
 
     <!-- Scripts -->
     <script>
+        // 0. Force Top Scroll on Load
+        // This prevents the browser from jumping to the previous scroll position (e.g. footer) on refresh
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+
         // Initialize Icons
         lucide.createIcons();
+        
+        // Set Year
+        document.getElementById('year').textContent = new Date().getFullYear();
 
         // 1. Navbar Scroll Effect & Active Link Highlight
         const navbar = document.getElementById('navbar');
